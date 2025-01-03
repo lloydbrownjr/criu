@@ -2175,7 +2175,10 @@ static bool validate_file(const int fd, const struct stat *fd_status, const stru
 		pr_warn("File %s has bad size %" PRIu64 " (expect %" PRIu64 ")... attempting file truncation\n", rfi->path, fd_status->st_size,
 		       rfi->rfe->size);
 		// Truncate file.
-		ftruncate(fd, rfi->rfe->size);
+		if (ftruncate(fd, rfi->rfe->size) < 0) {
+			pr_perror("Can't truncate file %s", rfi->path);
+			return false;
+		}
 	}
 
 	if (opts.file_validation_method == FILE_VALIDATION_BUILD_ID)
